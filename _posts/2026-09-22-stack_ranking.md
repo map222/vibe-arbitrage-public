@@ -12,6 +12,8 @@ As a former Meta scientist experiencing those changes, I thought, "I can model t
 * A two-strikes policy with a 5% quota gets most of the gains of a 20% quota
 * If aggressive firing decreases morale and people start leaving, the gains mostly evaporate. This is especially if attrition is biased towards high performers and not random.
 * Even modest training outperforms firing people
+**[Try the interactive simulator]({{ "/stack-ranking-simulator/" | relative_url }})** to run these scenarios yourself — every parameter below is adjustable and it all runs in your browser.
+
 Given the diminishing returns to firing people, and the significant risk of increasing attrition, most companies should have performance quotas below 10%. Adding in a two strikes policy is also good insurance against performance measurement error. And instead of being the tough CEO who demands greatness, try to make people better.
 
 # The Setup
@@ -97,5 +99,7 @@ To reiterate the summary at the start: firing people only really increases a com
 These simulations also gloss over many of the other costs of firing. Every person that is fired requires a dozens of interviews. Then the new person needs to ramp up. People need to cover the on-calls for the missing person. These are all hard to quantify, and might be able to be rolled up into morale and attrition.
 
 As someone with years of experience in tech ranging from Microsoft to 100 person startups, I think my optimal solution is something like a 5% quota for bad reviews, a two strike policy, and an emphasis on employee training. I do think a quota is necessary: I worked at Twitter pre-Musk and at Microsoft, and there was dead wood at those places that needed to be cleared, and a 5% quota might have helped. But there are diminishing returns to this quota: once you fire the incompetent people, everyone else is mostly fine.
+
+If you want to poke at the assumptions yourself, [the simulator]({{ "/stack-ranking-simulator/" | relative_url }}) lets you change the skill distribution, firing quota, measurement error, attrition and training rate, and see the effect immediately.
 
 No company I have ever worked at was serious about employee development. I would fill in my growth goals for the year, and they would be forgotten until the next year, even for my best managers. If a company were to truly take this seriously, they could probably crush.

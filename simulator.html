@@ -1,3 +1,8 @@
+---
+layout: null
+title: "Stack-ranking simulator"
+permalink: /stack-ranking-simulator/
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,6 +92,7 @@
   <p>Model how forced-ranking (firing the bottom performers), voluntary attrition, training, and hiring noise
   push a company's mean skill around over time. Everything runs in your browser — tweak the parameters and
   watch the outcome, or generate parameter sweeps like the charts at the bottom of the notebook.</p>
+  <p><a href="{{ "/2026/09/22/stack_ranking.html" | relative_url }}">&larr; Read the write-up: No, you can't fire your way to a better company</a></p>
 </header>
 
 <div class="wrap">
@@ -338,9 +344,8 @@ function simulate(p){
     // 3. Training.
     if (p.trainPerYear){
       for (let i=0;i<keptSkill.length;i++){
-        let v = (p.trainMode==='diminishing')
-          ? keptSkill[i] + p.trainPerYear*(5-keptSkill[i])
-          : keptSkill[i] + p.trainPerYear;
+        // Diminishing: close a fraction of the gap to 5, so nobody overshoots the cap.
+        let v = keptSkill[i] + p.trainPerYear*(5-keptSkill[i]);
         keptSkill[i] = v<1?1:(v>5?5:v);
       }
     }
@@ -365,22 +370,21 @@ function simulate(p){
    ========================================================================= */
 const CB = ['#0072B2','#E69F00','#009E73','#CC79A7','#56B4E9','#D55E00','#000000'];
 const PARAMS = [
-  {key:'distName',      label:'Candidate market', type:'select', options:['normal','uniform','skewed'], def:'normal', help:'External talent pool applicants are drawn from'},
-  {key:'companySize',   label:'Company size',     type:'range', def:2000, min:200, max:10000, step:200, fmt:v=>v.toLocaleString(), help:'Headcount (held constant). Lower = faster.'},
-  {key:'numIter',       label:'Years (cycles)',   type:'range', def:10, min:1, max:30, step:1},
-  {key:'measureSigma',  label:'Review noise σ',   type:'range', def:1, min:0, max:4, step:0.5, help:'Std dev of performance-review noise'},
-  {key:'interviewSigma',label:'Interview noise σ',type:'range', def:2, min:0, max:4, step:0.5, help:'Std dev of hiring-interview noise'},
   {key:'firePct',       label:'Fire % / year',    type:'range', def:0.10, min:0, max:0.5, step:0.05, fmt:v=>(v*100).toFixed(0)+'%', help:'Bottom fraction given a bad review each cycle'},
+  {key:'measureSigma',  label:'Review noise σ',   type:'range', def:0.8, min:0, max:2, step:0.1, fmt:v=>v.toFixed(1), help:'Std dev of performance-review noise'},
+  {key:'interviewSigma',label:'Interview noise σ',type:'range', def:1.3, min:0, max:2, step:0.1, fmt:v=>v.toFixed(1), help:'Std dev of hiring-interview noise'},
   {key:'badRatingsToFire',label:'Bad reviews to fire', type:'range', def:1, min:1, max:4, step:1, help:'Consecutive bad reviews before actually fired'},
-  {key:'hiringBar',     label:'Hiring bar',       type:'range', def:3, min:1, max:5, step:1, help:'Minimum measured interview score for an offer'},
   {key:'attritionPct',  label:'Attrition % / year',type:'range', def:0, min:0, max:0.5, step:0.05, fmt:v=>(v*100).toFixed(0)+'%', help:'Extra voluntary quit rate each cycle'},
   {key:'attritionMode', label:'Attrition mode',   type:'select', options:['random','regret'], def:'random', help:'"regret" = your best people are likeliest to leave'},
-  {key:'trainPerYear',  label:'Training / year',  type:'range', def:0, min:0, max:1, step:0.1, help:'Skill each retained employee gains per cycle'},
-  {key:'trainMode',     label:'Training mode',    type:'select', options:['flat','diminishing'], def:'flat', help:'"diminishing" = gains shrink near the 5 cap'},
+  {key:'trainPerYear',  label:'Training % / year', type:'range', def:0, min:0, max:0.5, step:0.01, fmt:v=>(v*100).toFixed(0)+'%', help:'Each employee closes this share of their gap to a perfect 5 every cycle'},
+  {key:'companySize',   label:'Company size',     type:'range', def:2000, min:200, max:10000, step:200, fmt:v=>v.toLocaleString(), help:'Headcount (held constant). Lower = faster.'},
+  {key:'numIter',       label:'Years (cycles)',   type:'range', def:10, min:1, max:30, step:1},
+  {key:'distName',      label:'Candidate market', type:'select', options:['normal','uniform','skewed'], def:'normal', help:'External talent pool applicants are drawn from'},
+  {key:'hiringBar',     label:'Hiring bar',       type:'range', def:3, min:1, max:5, step:1, help:'Minimum measured interview score for an offer'},
   {key:'seed',          label:'Random seed',      type:'range', def:42, min:1, max:9999, step:1},
 ];
 const NUMERIC_SWEEP = ['firePct','hiringBar','attritionPct','measureSigma','interviewSigma','trainPerYear','badRatingsToFire','numIter'];
-const SERIES_OPTS   = ['distName','attritionMode','trainMode', ...NUMERIC_SWEEP];
+const SERIES_OPTS   = ['distName','attritionMode', ...NUMERIC_SWEEP];
 
 /* ---- build the control panel ---- */
 const form = document.getElementById('paramForm');
@@ -433,7 +437,9 @@ function niceTicks(min, max, n=5){
 }
 function drawChart(canvas, series, opts){
   const dpr = window.devicePixelRatio || 1;
-  const cssW = canvas.clientWidth || 700, cssH = Number(canvas.getAttribute('height'));
+  if (!canvas.dataset.cssH) canvas.dataset.cssH = canvas.getAttribute('height');
+  const cssW = canvas.clientWidth || 700, cssH = Number(canvas.dataset.cssH);
+  canvas.style.height = cssH+'px';
   canvas.width = cssW*dpr; canvas.height = cssH*dpr;
   const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,cssW,cssH);
@@ -531,7 +537,7 @@ function defaultValuesFor(k){
   if (pm.type==='select') return pm.options.join(', ');
   const presets = {
     firePct:'0.05, 0.10, 0.20', attritionPct:'0.05, 0.10, 0.20', hiringBar:'2, 3, 4, 5',
-    measureSigma:'0, 1, 2', interviewSigma:'0, 1, 2', trainPerYear:'0, 0.1, 0.2',
+    measureSigma:'0, 1, 2', interviewSigma:'0, 1, 2', trainPerYear:'0, 0.05, 0.1',
     badRatingsToFire:'1, 2', numIter:'5, 10, 20',
   };
   return presets[k] || `${pm.min}, ${(pm.min+pm.max)/2}, ${pm.max}`;
@@ -610,15 +616,15 @@ document.getElementById('runSweep').addEventListener('click', runSweep);
 /* ---- sweep presets (reproduce the notebook's bottom charts) ---- */
 const PRESETS = {
   attrition:{
-    base:{distName:'normal', measureSigma:1, interviewSigma:2, firePct:0.10, attritionMode:'regret'},
+    base:{distName:'normal', measureSigma:0.8, interviewSigma:1.3, firePct:0.10, attritionMode:'regret'},
     x:'firePct', xv:'0.05, 0.10, 0.20', s:'attritionPct', sv:'0.05, 0.10, 0.20', y:'final',
   },
   cost:{
-    base:{measureSigma:1, interviewSigma:2},
+    base:{measureSigma:0.8, interviewSigma:1.3},
     x:'hiringBar', xv:'2, 3, 4, 5', s:'distName', sv:'normal, uniform, skewed', y:'interviews',
   },
   threshold:{
-    base:{distName:'normal', measureSigma:1, interviewSigma:2},
+    base:{distName:'normal', measureSigma:0.8, interviewSigma:1.3},
     x:'firePct', xv:'0.05, 0.10, 0.15, 0.20', s:'badRatingsToFire', sv:'1, 2', y:'final',
   },
 };
