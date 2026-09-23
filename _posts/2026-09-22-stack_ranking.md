@@ -12,7 +12,7 @@ As a former Meta scientist experiencing those changes, I thought, "I can model t
 * A two-strikes policy with a 5% quota gets most of the gains of a 20% quota
 * If aggressive firing decreases morale and people start leaving, the gains mostly evaporate. This is especially if attrition is biased towards high performers and not random.
 * Even modest training outperforms firing people
-**[Try the interactive simulator]({{ "/stack-ranking-simulator/" | relative_url }})** to run these scenarios yourself — every parameter below is adjustable and it all runs in your browser.
+* **[Try the interactive simulator]({{ "/stack-ranking-simulator/" | relative_url }})** to run these scenarios yourself — every parameter below is adjustable and it all runs in your browser.
 
 Given the diminishing returns to firing people, and the significant risk of increasing attrition, most companies should have performance quotas below 10%. Adding in a two strikes policy is also good insurance against performance measurement error. And instead of being the tough CEO who demands greatness, try to make people better.
 
